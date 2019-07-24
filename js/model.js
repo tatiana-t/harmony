@@ -1,7 +1,57 @@
 class Tonality {
-  constructor(key, harmon, type) {
+  constructor(key, harmonyToSet, type) {
+
+      this.key = key,
+      this.harmony = harmonyToSet,
+      this.type = type ? type : 'natural',
+      this.scale;
+      this.functions = {
+        tonic: {
+          primary: undefined,
+          chords: {
+            '53': {tones: undefined, notes: undefined},
+            '6': {tones: undefined, notes: undefined},
+            '64': {tones: undefined, notes: undefined}
+          }
+        },
+        subdominant: {
+          primary: undefined,
+          chords: {
+            '53': {tones: undefined, notes: undefined},
+            '6': {tones: undefined, notes: undefined},
+            '64': {tones: undefined, notes: undefined}
+          }
+        },
+        dominant: {
+          primary: undefined,
+          chords: {
+            '53': {tones: undefined, notes: undefined},
+            '6': {tones: undefined, notes: undefined},
+            '64': {tones: undefined, notes: undefined}
+          }
+        }
+      }
+
     const halfToneAmount = 12;
-    const harmony = {
+    const chordsStructure = {
+      '53': [2, 2],
+      '6': [2, 4],
+      '64': [4, 2]
+    };
+    const functionStructure = {
+      functions: [{
+          step: 1,
+          steps: [1, 3, 5],
+          function: 'tonic'
+        },{
+          step: 4,
+          steps: [4, 6, 1],
+          function: 'subdominant'
+        },{
+          step: 5,
+          steps: [5, 7, 2],
+          function: 'subdominant'
+        }],
       major: {
         sequence: [2, 2, 1, 2, 2, 2, 1],
         steps: [
@@ -58,36 +108,12 @@ class Tonality {
       }
     };
 
-    //    const seq = [
-    //      //без дубль-диезов и дубль-бемолей
-    //      ['c', 'his'],
-    //      ['cis', 'des'],
-    //      ['d'],
-    //      ['dis', 'es'],
-    //      ['e', 'fes'],
-    //      ['f', 'eis'],
-    //      ['fis', 'ges'],
-    //      ['g'],
-    //      ['gis', 'as'],
-    //      ['a'],
-    //      ['ais', 'b'],
-    //      ['h']
-    //    ];
     const names = ['c', 'd', 'e', 'f', 'g', 'a', 'h'];
 
-
     //с какого полутона начинать строить гамму
-    //    const first = (key) => names.reduce((acc, item, i) => {
-    //      if (item.indexOf(key) >= 0) {
-    //        return i + 1;
-    //      }
-    //      return acc;
-    //    });
     const first = names.indexOf(key) + 1;
 
-
-
-    const scaleSeq = (first) => harmony[harmon].sequence.reduce((acc, item, i) => {
+    const scaleSeq = (first) => functionStructure[harmonyToSet].sequence.reduce((acc, item, i) => {
       if (acc[i] + item >= halfToneAmount) {
         const delta = acc[i] + item - halfToneAmount;
         acc.push(delta);
@@ -111,7 +137,6 @@ class Tonality {
           return acc;
         }
         if ((first - 1) + i >= names.length) {
-          //          console.log(i)
           acc.push(item = {
             tone: item,
             name: names[i - 3 - first - 1], //что это??? -3???,
@@ -127,23 +152,28 @@ class Tonality {
         return acc;
       }, [])
     }
+
     this.scale = namedScale(scaleSeq(first));
-    //    console.log(scaleSeq(first));
-    //    console.log(namedScale(scaleSeq(first)));
+    this.setFunctions = () => {
 
+    this.scale.forEach((item) => {
+      if (item.step === 1) {
+        this.functions.tonic.primary = item.tone;
+      } else  if (item.step === 4) {
+        this.functions.subdominant.primary = item.tone;
+      } else if (item.step === 5) {
+        this.functions.dominant.primary = item.tone;
+      }
+    });
 
-  }
-
-
-
+    const setCords = (func) => {
+        const chordStructure = functionStructure.functions.filter((item) => item.function === func);
+         // this.functions.tonic.
+      }
+    }
+  };
 };
 
-
-
-
 const tonalHarmony = new Tonality('d', 'major');
+tonalHarmony.setFunctions();
 console.log(tonalHarmony);
-//const test = first('d', seq);
-//const testScale = scale(test);
-//const namedScale = setNamedScale(testScale);
-//console.log(test, testScale, namedScale);
