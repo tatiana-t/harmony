@@ -108,13 +108,54 @@ class Tonality {
       }
     };
 
+const setCycle = (firstItem, template, func, resultLength = 8, cycleLength = halfToneAmount) => {
+  const firstIndex = template.indexOf(firstItem.substr(0, 1));
+  const iter = (acc, i) => {
+    if (acc.length >= 8) {
+      return acc;
+    }
+    const newItem = template[i];
+    if (i === template.length) {
+      return iter(acc, 0);
+    }
+    const newAcc = [...acc, newItem];
+    return iter(newAcc, i + 1)
+  }
+  return iter([], firstIndex);
+};
+
     const names = ['c', 'd', 'e', 'f', 'g', 'a', 'h'];
 
+const setN = setCycle(key, names);
     //с какого полутона начинать строить гамму
-    const first = names.indexOf(key) + 1;
+    const firstTone = (key) => {
+      const index = names.indexOf(key.substr(0, 1));
 
+      const firstTone = functionStructure[harmonyToSet].steps.reduce((acc, item) => {
+        if ( item.step === index) {
+            return item.ht;
+        }
+        return acc;
+      }, {});
+
+      if (key.length === 1) {
+        return firstTone;
+      } else {
+        //если тональность со снаком в названии
+        const alterSign = key.substr(1);
+        if (alterSign === 'is') {
+          return firstTone + 1;
+        } else if (alterSign === 'es' || alterSign === 's') {
+          return firstTone - 1;
+        }
+      }
+    };
+    const first = firstTone(key);
+console.log('first', first);
+
+//последовательность полутонов
     const scaleSeq = (first) => functionStructure[harmonyToSet].sequence.reduce((acc, item, i) => {
-      if (acc[i] + item >= halfToneAmount) {
+      if (acc[i] + item > halfToneAmount) {
         const delta = acc[i] + item - halfToneAmount;
         acc.push(delta);
         return acc;
@@ -123,57 +164,41 @@ class Tonality {
       return acc;
     }, [first]);
 
-    const namedScale = (scale) => {
-      return scale.reduce((acc, item, i) => {
-        //        console.log(acc)
-        //        console.log('item',  item, 'i', i)
-        if (first + i >= 12) {
-          console.log(names[(first + i) - 12])
-          acc.push(item = {
-            tone: item,
-            name: names[(first + i) - 12],
-            step: i + 1
-          })
-          return acc;
+    const htonesSeq = scaleSeq(first);
+
+    const setScale = (names, htones) => {
+      this.scale = names.map((item, i) => {
+        return {
+          step: i + 1 > 7 ? 1 : i + 1,
+          htone: htones[i],
+          //учесть в названиях знаки?
+          name: item
         }
-        if ((first - 1) + i >= names.length) {
-          acc.push(item = {
-            tone: item,
-            name: names[i - 3 - first - 1], //что это??? -3???,
-            step: i + 1
-          })
-          return acc;
-        }
-        acc.push(item = {
-          tone: item,
-          name: names[(first - 1) + i],
-          step: i + 1
-        })
-        return acc;
-      }, [])
-    }
-
-    this.scale = namedScale(scaleSeq(first));
-    this.setFunctions = () => {
-
-    this.scale.forEach((item) => {
-      if (item.step === 1) {
-        this.functions.tonic.primary = item.tone;
-      } else  if (item.step === 4) {
-        this.functions.subdominant.primary = item.tone;
-      } else if (item.step === 5) {
-        this.functions.dominant.primary = item.tone;
-      }
-    });
-
-    const setCords = (func) => {
-        const chordStructure = functionStructure.functions.filter((item) => item.function === func);
-         // this.functions.tonic.
-      }
-    }
+      })
+    };
+    setScale(setN, htonesSeq);
+    // this.scale = namedScale(scaleSeq(first));
+    // this.scale = setNames(scaleSeq(first));
+    // this.setFunctions = () => {
+    //
+    // this.scale.forEach((item) => {
+    //   if (item.step === 1) {
+    //     this.functions.tonic.primary = item.tone;
+    //   } else  if (item.step === 4) {
+    //     this.functions.subdominant.primary = item.tone;
+    //   } else if (item.step === 5) {
+    //     this.functions.dominant.primary = item.tone;
+    //   }
+    // });
+    //
+    // const setCords = (func) => {
+    //     const chordStructure = functionStructure.functions.filter((item) => item.function === func);
+    //      // this.functions.tonic.
+    //   }
+    // }
   };
 };
 
-const tonalHarmony = new Tonality('d', 'major');
-tonalHarmony.setFunctions();
+const tonalHarmony = new Tonality('fis', 'major');
+// tonalHarmony.setFunctions();
 console.log(tonalHarmony);
